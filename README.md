@@ -1,5 +1,7 @@
 # structural-drawing-reader
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/JayMirzaei/structural-drawing-reader)
+
 Reads structural drawing PDFs into a typed index of facts and answers questions about them, with
 the evidence highlighted on the sheet.
 
@@ -24,6 +26,32 @@ enabled for the repository; build it locally with `uv run python scripts/build_s
 More: [architecture](docs/architecture.md), [drafting conventions](docs/conventions.md),
 [providers](docs/providers.md), [evaluation](docs/evaluation.md), [changelog](CHANGELOG.md),
 [contributing](CONTRIBUTING.md).
+
+## Run it in your browser
+
+[Open the repository in GitHub Codespaces](https://codespaces.new/JayMirzaei/structural-drawing-reader)
+and press **Create codespace**. GitHub builds a container from `.devcontainer/devcontainer.json`
+(Python 3.11, uv, then `uv sync --frozen`), starts the app headless on port 8501 and opens it in a
+new browser tab. If the tab is blocked, open it from the **Ports** panel. The first start takes a
+few minutes.
+
+- The codespace runs on your own GitHub account and counts against your own Codespaces quota
+  (personal accounts get a free monthly allowance). Stop or delete it when you are done.
+- No API key is needed. The app answers from its rules; leave the provider on "Rules only (no LLM)". The
+  repository holds no keys, and the codespace gets none.
+- The forwarded port is private to you by default. The app is started with Streamlit's CORS and
+  XSRF checks off so it works behind the Codespaces proxy; do not make the port public.
+- The command line works in the codespace terminal, for example
+  `uv run drawing-reader summary examples/access_platform_set.pdf`,
+  `uv run drawing-reader eval --quiet` and `uv run pytest -n auto`.
+- The OCR extra is not installed in the codespace. For the scanned example, run
+  `sudo apt-get update && sudo apt-get install -y libgl1 && uv sync --extra ocr`
+  (OpenCV needs `libgl1`; this step has not been tried in a codespace).
+
+**Not verified on GitHub:** the codespace itself has not been built (Docker is not installed on
+the machine this was written on). Verified locally: the same `uv sync --frozen` in a clean clone,
+the app starting with the same command on `0.0.0.0` and answering `/_stcore/health`, and the tests
+passing.
 
 ## Quickstart (offline, about five minutes)
 

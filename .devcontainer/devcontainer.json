@@ -1,0 +1,18 @@
+{
+  "name": "structural-drawing-reader",
+  "image": "mcr.microsoft.com/devcontainers/python:3.3.4-3.11-bookworm",
+  "containerEnv": {
+    "UV_LINK_MODE": "copy"
+  },
+  "postCreateCommand": "pipx install uv==0.12.13 && uv sync --frozen",
+  "postAttachCommand": {
+    "app": "uv run streamlit run app/streamlit_app.py --server.address=0.0.0.0 --server.port=8501 --server.headless=true --server.enableCORS=false --server.enableXsrfProtection=false --browser.gatherUsageStats=false"
+  },
+  "forwardPorts": [8501],
+  "portsAttributes": {
+    "8501": {
+      "label": "Streamlit app",
+      "onAutoForward": "openBrowser"
+    }
+  }
+}
