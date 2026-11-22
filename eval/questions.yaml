@@ -1,0 +1,288 @@
+# Acceptance questions on the synthetic access-platform set (examples/generate.py).
+# Run: uv run drawing-reader eval            (rules only, deterministic)
+#      uv run drawing-reader eval --provider anthropic
+# Format: see drawing_reader/evaluation.py. Expected values come from the drawing itself, not from the
+# reader's output: a question marked known_limit is a real weakness and stays in the file.
+pdf: ../examples/access_platform_set.pdf
+questions:
+  # ---- the set and its sheets
+  - id: sheet-list
+    topic: sheets
+    q: List the sheets and their titles.
+    expect: [S-001, GENERAL NOTES, S-101, PLATFORM FRAMING PLAN, S-201, FRAME ELEVATIONS, S-301, TYPICAL DETAILS, S-401, COLUMN SCHEDULE]
+  - id: sheet-count
+    topic: sheets
+    q: How many sheets are in the set?
+    expect: [5 sheet]
+  - id: sheet-about
+    topic: sheets
+    q: What is on S-301?
+    expect: [TYPICAL DETAILS, COLUMN BASE PLATE, BEAM TO COLUMN SHEAR TAB, BRACE GUSSET AT COLUMN BASE]
+    sheets: [S-301]
+  - id: sheet-by-topic
+    topic: sheets
+    q: Which sheet shows the framing plan?
+    expect: [S-101]
+    reject: [S-201]
+  - id: structural-sheets
+    topic: sheets
+    q: Which sheets are structural?
+    expect: [5 structural sheet]
+  - id: views-on-sheet
+    topic: sheets
+    q: What views are on S-201?
+    expect: [ELEVATION ON GRID C, ELEVATION ON GRID 1]
+    sheets: [S-201]
+  - id: missing-sheet
+    topic: references
+    q: Which sheets are referenced but not in the set?
+    expect: [S-501, S-001, S-101]
+  - id: missing-sheet-named
+    topic: references
+    q: Is S-501 referenced anywhere?
+    expect: [not in this set, S-101]
+  # ---- title block
+  - id: project-number
+    topic: title block
+    q: What is the project number?
+    expect: [PN-4172]
+  - id: client
+    topic: title block
+    q: Who is the client?
+    expect: [HARLOW CREEK REGIONAL UTILITIES]
+  - id: drawn-by-sheet
+    topic: title block
+    q: Who drew S-301?
+    expect: [HZK]
+    reject: [QEV]
+    sheets: [S-301]
+  - id: checked-by
+    topic: title block
+    q: Who checked the drawings?
+    expect: [ALK]
+  - id: date-sheet
+    topic: title block
+    q: What is the date on S-301?
+    expect: [2030-06-19]
+  - id: location
+    topic: title block
+    q: Where is the project?
+    expect: [45 QUARRY ROAD, LARKSPUR FALLS, MB]
+  - id: address-bare
+    topic: title block
+    q: What is the address?
+    expect: [45 QUARRY ROAD, LARKSPUR FALLS, MB]
+  # ---- revisions
+  - id: latest-revisions
+    topic: revisions
+    q: What is the latest revision on each sheet?
+    expect: [REVISED ANCHOR ROD SIZE, ISSUED FOR CONSTRUCTION]
+  - id: revision-history
+    topic: revisions
+    q: What is the revision history of S-301?
+    expect: [ISSUED FOR REVIEW, 2030-02-04, ISSUED FOR APPROVAL, ISSUED FOR CONSTRUCTION, REVISED ANCHOR ROD SIZE, 2030-06-19]
+    reject: [DRAWN BY]
+  - id: revision-number
+    topic: revisions
+    q: What was revision 1?
+    expect: [REVISED ANCHOR ROD SIZE, S-301]
+  # ---- scales
+  - id: scale-sheet
+    topic: scale
+    q: What is the scale of S-101?
+    expect: ["1:50", dimension strings agree]
+  - id: scale-view
+    topic: scale
+    q: What is the scale of the column base plate?
+    expect: ["1:10"]
+    sheets: [S-301]
+  # ---- members
+  - id: brace-size
+    topic: members
+    q: What is the brace size?
+    expect: [L102X102X9.5]
+  - id: member-lookup
+    topic: members
+    q: Where is W200X27 used?
+    expect: [S-101]
+  - id: column-size
+    topic: members
+    q: What size are the columns?
+    expect: [HSS152X152X9.5]
+    reject: [W200X27]
+    known_limit: >-
+      Member roles come from label orientation. In a plan, beams drawn up the sheet carry vertical labels,
+      so the plan's W250X33 and W200X27 beams are listed as columns next to the real HSS columns.
+  - id: beam-sizes
+    topic: members
+    q: What are the beam sizes?
+    expect: [W310X39, W250X33]
+    reject: [HSS152X152X9.5]
+    known_limit: >-
+      A horizontal HSS label in a detail and the schedule rows are taken for beams: the orientation rule does
+      not know a schedule cell or a leader label from a member drawn along its length.
+  - id: angle
+    topic: members
+    q: What is the angle of the brace?
+    expect: ["31.0"]
+  # ---- materials and design data
+  - id: anchor-rod-grade
+    topic: materials
+    q: What grade are the anchor rods?
+    expect: [ASTM F1554, "248"]
+    reject: [W48, A325M]
+  - id: beam-grade
+    topic: materials
+    q: What is the steel grade of the beams?
+    expect: [CSA G40.21, "350"]
+    reject: [G164, S16, "300"]
+  - id: standards
+    topic: materials
+    q: What standards are cited?
+    expect: [CSA S16, CSA G164, CSA W48]
+    reject: [F1554, G40.21]
+  - id: bolt-grade
+    topic: materials
+    q: What grade are the bolts?
+    expect: [A325M]
+  - id: bolts-plain
+    topic: materials
+    q: What bolts are used?
+    expect: [A325M]
+    known_limit: >-
+      The materials rule waits for a grade or size word. "What bolts are used?" names neither, and no other
+      rule claims it, so the reader says it found nothing.
+  - id: concrete
+    topic: materials
+    q: What is the concrete strength?
+    expect: [f'c = 30 MPa]
+  - id: grout
+    topic: materials
+    q: What is the grout thickness?
+    expect: ["25"]
+    method: rule:grout
+    known_limit: >-
+      The grout rule reads a thickness only when "mm" follows the number ("25mm GROUT"); this set writes
+      "25 THICK" with the unit in a general note, so only the keyword fallback finds the note.
+  - id: live-load
+    topic: loads
+    q: What is the live load?
+    expect: [4.8 kPa]
+    reject: [DEAD]
+  - id: guard-load
+    topic: loads
+    q: What is the guard load?
+    expect: [0.75 kN/m]
+  - id: site-class
+    topic: loads
+    q: What is the seismic site class?
+    expect: [SITE CLASS = C]
+  - id: deflection
+    topic: notes
+    q: What is the deflection limit?
+    expect: [SPAN/360]
+    reject: [GROUT, BOLT]
+  # ---- notes
+  - id: note-lookup
+    topic: notes
+    q: What does general note 3 say?
+    expect: [DO NOT SCALE THE DRAWINGS]
+  - id: plan-note
+    topic: notes
+    q: What does plan note 2 say?
+    expect: [W200X27 AT 1500 CENTRES]
+  # ---- geometry
+  - id: top-of-steel
+    topic: geometry
+    q: What is the top of steel elevation?
+    expect: [3600 mm]
+    reject: [4700]
+  - id: elevations
+    topic: geometry
+    q: What elevations are shown?
+    expect: [T.O. SLAB, T.O. STEEL, T.O. GUARD, "4700"]
+  - id: grids
+    topic: geometry
+    q: What grid lines are there?
+    expect: ["1, 2, A, B, C"]
+  - id: base-plate-size
+    topic: geometry
+    q: What is the base plate size?
+    expect: [350X350]
+    sheets: [S-301]
+    known_limit: >-
+      The size question is answered from the detail's dimension strings (350, 250, 50, Ø26), not from the
+      plate's own label PL25X350X350, so the plan size is not stated as a size.
+  - id: anchor-rod-diameter
+    topic: geometry
+    q: What is the anchor rod diameter?
+    expect: [Ø20]
+    method: rule:component-spec
+    known_limit: >-
+      "Ø20 THREADED ROD ANCHORS" puts the diameter before the component name, which the component-spec
+      rule does not read; only the keyword fallback finds the line, among five unrelated ones.
+  - id: bay-width
+    topic: geometry
+    q: What is the bay width between grid A and B?
+    expect: ["6000"]
+    known_limit: >-
+      The grid rule claims any question that names grid lines and lists the grids; dimensions are not
+      tied to the grid lines they run between.
+  - id: overall-length
+    topic: geometry
+    q: What is the overall length of the platform?
+    expect: ["10500"]
+    known_limit: >-
+      "Length" of a named object only matches dimensions through a view title; no view is called
+      "platform", and the overall dimension carries no name of its own.
+  - id: base-plate-thickness
+    topic: geometry
+    q: What is the thickness of the base plate?
+    expect: ["25"]
+    reject: [GROUT]
+    known_limit: >-
+      The thickness is in the plate label PL25X350X350 in the base plate detail, but the question names
+      no detail, and the component rule reads thicknesses from note text only.
+  # ---- symbols
+  - id: welds
+    topic: welds
+    q: What welds are shown?
+    expect: [6 mm fillet, arrow side, both sides, typ.]
+  - id: weld-at-detail
+    topic: welds
+    q: What weld size at the brace gusset?
+    expect: [6 mm fillet, BRACE GUSSET AT COLUMN BASE]
+    reject: [SHEAR TAB]
+  - id: detail-callout
+    topic: callouts
+    q: Where is detail 1/S-301 called out?
+    expect: [S-101, S-201, COLUMN BASE PLATE]
+    reject: [1/S-201]
+  - id: callout-count
+    topic: callouts
+    q: How many callouts reference S-301?
+    expect: [7 callout, S-001, S-401]
+  - id: callouts-on-sheet
+    topic: callouts
+    q: Which callouts are on S-201?
+    expect: [1/S-301, 2/S-301, 3/S-301]
+  - id: callouts-on-sheet-details
+    topic: callouts
+    q: What details are called out on S-101?
+    expect: [1/S-201, 2/S-201, 1/S-301, 2/S-301]
+    known_limit: >-
+      The callout rule triggers on "callout(s)" or "detail <n>"; "details are called out" with no number
+      reaches no rule.
+  # ---- the schedule
+  - id: schedule-row
+    topic: schedule
+    q: What is the column mark at grid B-1?
+    expect: [C2]
+    known_limit: >-
+      Schedule cells are recognised (so their numbers are not taken for dimensions), but rows are not
+      read as records, so no rule can answer a lookup by row.
+  # ---- out of scope
+  - id: not-found
+    topic: scope
+    q: What is the capital of France?
+    expect: [could not find]

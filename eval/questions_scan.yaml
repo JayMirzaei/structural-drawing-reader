@@ -1,0 +1,43 @@
+# Acceptance questions on the scanned framing plan (examples/access_platform_scan.pdf): the OCR path.
+# Needs the `ocr` extra. Answers read from a scan carry a caveat and a confidence capped at 0.8.
+pdf: ../examples/access_platform_scan.pdf
+questions:
+  - id: scan-sheet
+    topic: sheets
+    q: List the sheets and their titles.
+    expect: [S-101, PLATFORM FRAMING PLAN]
+  - id: scan-scale
+    topic: scale
+    q: What is the scale?
+    expect: ["1:50"]
+  - id: scan-beams
+    topic: members
+    q: What sizes are the beams?
+    expect: [W310X39]
+  - id: scan-member-lookup
+    topic: members
+    q: Where is W200X27 used?
+    expect: [S-101]
+  - id: scan-revision
+    topic: revisions
+    q: What is the latest revision?
+    expect: [rev 0, 2030-05-08]
+  - id: scan-plan-note
+    topic: notes
+    q: What does plan note 2 say?
+    expect: [1500 CENTRES]
+    known_limit: >-
+      OCR drops the space in the heading ("PLANNOTES"), so the note lookup cannot match "plan note".
+  - id: scan-location
+    topic: title block
+    q: Where is the project?
+    expect: [QUARRY ROAD]
+    known_limit: >-
+      OCR runs words together ("45QUARRY ROAD", "LARKSPURFALLS"); the address is found, but the location
+      question does not reach it at the confidence the rule needs.
+  - id: scan-grids
+    topic: geometry
+    q: What grid lines are there?
+    expect: [A, B, C]
+    known_limit: >-
+      Circles are not recovered from a raster, so grid bubbles are not found on a scan.

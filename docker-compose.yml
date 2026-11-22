@@ -1,0 +1,35 @@
+# docker compose up                        ->  the app on http://localhost:8501 (rules only until a key is set)
+# OCR=1 docker compose up --build          ->  the same, with the OCR path for scanned PDFs
+# docker compose --profile local-model up  ->  also an Ollama server for the "Local model" provider;
+#     then pull a model once:  docker compose exec ollama ollama pull <model>
+#
+# Provider keys come from .env (copy .env.example first); the file is optional.
+# Not run on the machine this was written on (no Docker there); CI builds the image.
+services:
+  reader:
+    build:
+      context: .
+      args:
+        OCR: "${OCR:-0}"
+    ports:
+      # This machine only: the app has no login, and a key in .env would be usable by anyone who reaches it.
+      - "127.0.0.1:8501:8501"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Where the "Local model" provider looks for an OpenAI-compatible server: the ollama service
+      # below when the local-model profile is on. Override in .env for a llama.cpp server elsewhere.
+      DRAWING_READER_LOCAL_URL: "${DRAWING_READER_LOCAL_URL:-http://ollama:11434}"
+    volumes:
+      - reader-cache:/data
+
+  ollama:
+    profiles: ["local-model"]
+    image: ollama/ollama:latest  # pin a version for a reproducible setup
+    volumes:
+      - ollama-models:/root/.ollama
+
+volumes:
+  reader-cache:
+  ollama-models:

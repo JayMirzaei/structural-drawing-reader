@@ -1,0 +1,99 @@
+[project]
+name = "structural-drawing-reader"
+version = "1.0.0"
+description = "Reads structural drawing PDFs into a typed, cited fact index and answers questions with the evidence highlighted on the sheet. Rules first, LLM only as fallback."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Jay Mirzaei" }]
+requires-python = ">=3.11"
+keywords = [
+    "structural engineering",
+    "engineering drawings",
+    "pdf",
+    "information extraction",
+    "question answering",
+    "ocr",
+    "llm",
+    "streamlit",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Text Processing :: General",
+    "Typing :: Typed",
+]
+dependencies = [
+    "httpx>=0.28.1",
+    "numpy>=2.4.6",
+    "pillow>=12.3.0",
+    "pydantic>=2.13.5",
+    "pymupdf>=1.28.2",
+    "pyyaml>=6.0.3",
+    "streamlit>=1.63.0,<2",
+]
+
+[project.urls]
+Homepage = "https://github.com/JayMirzaei/structural-drawing-reader"
+Documentation = "https://github.com/JayMirzaei/structural-drawing-reader/tree/main/docs"
+Demo = "https://jaymirzaei.github.io/structural-drawing-reader/"
+Changelog = "https://github.com/JayMirzaei/structural-drawing-reader/blob/main/CHANGELOG.md"
+Issues = "https://github.com/JayMirzaei/structural-drawing-reader/issues"
+
+[project.optional-dependencies]
+# OCR path for scanned sheets (CPU only, offline).
+ocr = ["rapidocr-onnxruntime>=1.4.4"]
+# LLM providers. Each SDK is imported only when its provider is used.
+gemini = ["google-genai>=2.22.0"]
+openai = ["openai>=3.57.0"]
+anthropic = ["anthropic>=2.12.0"]
+all = ["structural-drawing-reader[ocr,gemini,openai,anthropic]"]
+
+[project.scripts]
+drawing-reader = "drawing_reader.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "drawing_reader"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-xdist>=3.8.0",
+    "ruff>=0.15.0",
+    # the provider SDKs, so the provider tests (mocked HTTP, no network) run on a plain `uv sync`
+    "anthropic>=2.12.0",
+    "google-genai>=2.22.0",
+    "openai>=3.57.0",
+    "pytest-cov>=7.1.0",
+    "pytest-timeout>=2.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# the tests draw small PDFs with the drafting kit that also draws the example sets
+pythonpath = ["examples"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "app", "eval", "examples", "scripts", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "BLE", "RUF100"]
+ignore = [
+    "B023",  # helpers defined inside a loop are called within the same iteration, never kept
+    "E501",  # the formatter owns line length; what remains are regex literals that read worse when split
+]
+

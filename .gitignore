@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+
+# Tools
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# The reader's caches (rendered sheets, extracted primitives, OCR results, LLM answers)
+.drawing_reader_cache/
+
+# Built static demo site (scripts/build_site.py) and command-line output from the README quickstart
+/site/
+/out/
+
+# Secrets: never commit keys
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Local drawings and their behaviour snapshots (see drawing_reader.regression): never commit
+/drawings/
+/snapshots/
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
