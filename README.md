@@ -184,8 +184,8 @@ Keys come from `.env` (copy `.env.example`). With the `local-model` profile, pul
 port can use it, and any key set in `.env`. Compose therefore publishes the port on `127.0.0.1`
 only; keep it that way unless the network is trusted.
 
-**Not verified locally:** Docker is not installed on the machine this was written on. The image is
-built and smoke-tested by CI (`.github/workflows/ci.yml`); the Ollama profile is not exercised there.
+**Tested in CI:** the image is built with and without OCR and smoke-tested (CLI, eval, app health
+check) on every push (`.github/workflows/ci.yml`). The Ollama profile is not exercised there.
 
 ## Evaluation
 
